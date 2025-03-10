@@ -1,0 +1,40 @@
+--this is a module script
+
+local NPCDialogues = {}
+
+-- List of possible dialogues
+NPCDialogues.Dialogues = {
+	"Have you checked behind the volcano on the Main Land? There is a water tanker there, I'm sure i saw something under it.",
+	"There was something near the cannons on Island 1.",
+	"Pretty sure I saw something in a cave on Island 4.",
+	"Island 4 has two spots. Inside information haha.",
+	"There is a hole on the lonely island 3. There is a box in there.",
+	"The weird stone or growth that stands upright on the Island 4, its shadow houses a box.",
+	"Treasures are housed inside wooden boxes. I'm not sure of what's inside though!"
+}
+
+-- Track assigned dialogue indexes
+local assignedIndexes = {}
+
+-- Function to get a unique dialogue index
+local function getUniqueIndex()
+	if #assignedIndexes >= #NPCDialogues.Dialogues then
+		assignedIndexes = {} -- Reset tracking when all dialogues are used
+	end
+
+	local index
+	repeat
+		index = math.random(1, #NPCDialogues.Dialogues)
+	until not assignedIndexes[index]
+
+	assignedIndexes[index] = true -- Mark this index as used
+	return index
+end
+
+-- Function to get a unique dialogue
+function NPCDialogues.GetUniqueDialogue()
+	local index = getUniqueIndex()
+	return NPCDialogues.Dialogues[index]
+end
+
+return NPCDialogues
