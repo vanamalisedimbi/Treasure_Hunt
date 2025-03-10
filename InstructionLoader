@@ -1,0 +1,35 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ShowSpawnGUI = ReplicatedStorage:FindFirstChild("ShowSpawnGUI")
+
+-- Create RemoteEvent if it doesn't exist
+if not ShowSpawnGUI then
+	ShowSpawnGUI = Instance.new("RemoteEvent")
+	ShowSpawnGUI.Name = "ShowSpawnGUI"
+	ShowSpawnGUI.Parent = ReplicatedStorage
+end
+
+-- Function to handle touch events
+local function onPartTouched(otherPart)
+	local character = otherPart.Parent
+	local player = Players:GetPlayerFromCharacter(character)
+
+	if player then
+		print("📢 Player touched SpawnGUIPart:", player.Name)  -- Debug print
+		ShowSpawnGUI:FireClient(player)  -- Fire event to show GUI for the player
+	end
+end
+
+-- Wait for all parts to load
+task.wait(2)  -- Avoid race conditions
+
+-- Connect function to all "SpawnGUIPart" parts
+local foundParts = 0
+for _, spawnPart in pairs(workspace:GetChildren()) do
+	if spawnPart:IsA("BasePart") and spawnPart.Name == "SpawnGUIPart" then
+		spawnPart.Touched:Connect(onPartTouched)
+		foundParts += 1
+	end
+end
+
+print("🔍 Found SpawnGUIPart count:", foundParts)
