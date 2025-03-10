@@ -1,0 +1,56 @@
+local Players = game:GetService("Players")
+local Teams = game:GetService("Teams")
+local Workspace = game:GetService("Workspace")
+local PointsManager = require(game.ServerScriptService:WaitForChild("PointsManager"))
+
+-- Ensure Teams exist before proceeding
+local teamRed = Teams:WaitForChild("TeamRed")
+local teamBlue = Teams:WaitForChild("TeamBlue")
+
+-- Ensure Spawn Locations exist before proceeding
+local redSpawn = Workspace:WaitForChild("RedSpawn")
+local blueSpawn = Workspace:WaitForChild("BlueSpawn")
+
+-- Function to assign a player to a team before they spawn
+local function assignTeam(player)
+	local redCount = #teamRed:GetPlayers()
+	local blueCount = #teamBlue:GetPlayers()
+
+	-- Assign to the team with fewer players
+	if redCount <= blueCount then
+		player.Team = teamRed
+	else
+		player.Team = teamBlue
+	end
+
+	player.Neutral = false -- Ensure the player is not Neutral
+end
+
+-- Function to teleport player to the correct team spawn
+local function teleportToSpawn(player)
+	local character = player.Character or player.CharacterAdded:Wait()
+	task.wait(0.1) -- Small delay to ensure team is set
+
+	local spawnLocation = (player.Team == teamRed) and redSpawn or blueSpawn
+
+	if character and spawnLocation then
+		local rootPart = character:WaitForChild("HumanoidRootPart")
+		rootPart.CFrame = spawnLocation.CFrame + Vector3.new(0, 5, 0) -- Slight lift to avoid ground clipping
+	end
+end
+
+-- Assign teams before players spawn
+Players.PlayerAdded:Connect(function(player)
+	assignTeam(player)
+
+	-- Wait for character to spawn, then teleport to correct location
+	player.CharacterAdded:Connect(function()
+		teleportToSpawn(player)
+	end)
+
+	-- Force character load after team assignment
+	player:LoadCharacter()
+end)
+
+
+PointsManager.InitializeTeams()
