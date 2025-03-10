@@ -1,0 +1,56 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Create a BooleanValue in ReplicatedStorage if it doesn't exist
+local gameStarted = ReplicatedStorage:FindFirstChild("GameStarted")
+if not gameStarted then
+	gameStarted = Instance.new("BoolValue")
+	gameStarted.Name = "GameStarted"
+	gameStarted.Value = false  -- Default to false (game hasn't started)
+	gameStarted.Parent = ReplicatedStorage
+end
+
+-- Function to freeze a player
+local function freezePlayer(player)
+	local character = player.Character or player.CharacterAdded:Wait()
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+	if humanoid then
+		humanoid.WalkSpeed = 0  -- Freeze the player
+		humanoid.JumpPower = 0  -- Prevent jumping
+	end
+end
+
+-- Function to unfreeze all players
+local function unfreezeAllPlayers()
+	for _, player in pairs(Players:GetPlayers()) do
+		local character = player.Character
+		if character then
+			local humanoid = character:FindFirstChildOfClass("Humanoid")
+			if humanoid then
+				humanoid.WalkSpeed = 16  -- Default WalkSpeed
+				humanoid.JumpPower = 50  -- Default JumpPower
+			end
+		end
+	end
+	gameStarted.Value = true  -- Mark game as started
+end
+
+-- Function to handle new players
+Players.PlayerAdded:Connect(function(player)
+	if gameStarted.Value then
+		player:Kick("Game has already started. Please wait for the next round.")
+		return
+	end
+
+	-- Freeze player when their character spawns
+	player.CharacterAdded:Connect(function()
+		freezePlayer(player)
+	end)
+
+	-- Check if we have at least 2 players before starting
+	if #Players:GetPlayers() >= 2 then
+		wait(3)  -- Small delay before unfreezing (increase for testing)
+		unfreezeAllPlayers()
+	end
+end)
