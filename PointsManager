@@ -55,20 +55,45 @@ function PointsManager.IncrementTreasureCounter()
 	PointsManager.TotalTreasuresCollected += 1
 	print("🔥 Total Treasures Collected:", PointsManager.TotalTreasuresCollected)
 
-	-- ✅ If 3 treasures are collected, trigger game end
-	if PointsManager.TotalTreasuresCollected >= 3 then
-		-- Determine Winning Team
-		local redScore = Teams:FindFirstChild("TeamRed") and Teams.TeamRed:GetAttribute("Score") or 0
-		local blueScore = Teams:FindFirstChild("TeamBlue") and Teams.TeamBlue:GetAttribute("Score") or 0
-		local winningTeam = "tie"
+	-- 🚨 DEBUG: Make sure this function is being called
+	print("⚡ Function `IncrementTreasureCounter()` was triggered!")
 
-		if redScore > blueScore then
-			winningTeam = "TeamRed"
-		elseif blueScore > redScore then
-			winningTeam = "TeamBlue"
+	-- ✅ If 3 treasures are collected, trigger game end
+	if PointsManager.TotalTreasuresCollected >= 2 then
+		-- Get Team Objects
+		local redTeam = Teams:FindFirstChild("Red Team")
+		local blueTeam = Teams:FindFirstChild("Blue Team")
+
+		local redScore, blueScore = 0, 0
+
+		-- ✅ Calculate total score for each team
+		for _, player in pairs(Players:GetPlayers()) do
+			local leaderstats = player:FindFirstChild("leaderstats")
+			if leaderstats then
+				local scoreValue = leaderstats:FindFirstChild("Score")
+				if scoreValue then
+					if player.Team == redTeam then
+						redScore += scoreValue.Value
+					elseif player.Team == blueTeam then
+						blueScore += scoreValue.Value
+					end
+				end
+			end
 		end
 
-		-- Find MVP (Player with highest score)
+		-- ✅ Determine Winning Team
+		local winningTeam = "tie"
+
+		print("🔴 Red Team Score:", redScore)
+		print("🔵 Blue Team Score:", blueScore)
+
+		if redScore > blueScore then
+			winningTeam = "Red Team"
+		elseif blueScore > redScore then
+			winningTeam = "Blue Team"
+		end
+
+		-- ✅ Find MVP (Player with highest score)
 		local highestTreasureCount = 0
 		local MVP = "tie"
 		for _, player in pairs(Players:GetPlayers()) do
@@ -84,13 +109,16 @@ function PointsManager.IncrementTreasureCounter()
 			end
 		end
 
-		-- Debug Prints
+		-- ✅ Debug Prints
 		print("🏆 Game Over! Winning Team:", winningTeam)
 		print("🏅 MVP:", MVP)
 
 		-- ✅ Fire event to show game-over GUI
 		if GameFinishedEvent then
+			print("📢 Firing GameFinishedEvent!")
 			GameFinishedEvent:FireAllClients(winningTeam, MVP)
+		else
+			print("🚨 ERROR: GameFinishedEvent is NIL!")
 		end
 	end
 end
