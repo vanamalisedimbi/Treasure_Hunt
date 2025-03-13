@@ -1,0 +1,51 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local PointsManager = require(game.ServerScriptService:WaitForChild("PointsManager"))
+
+local PersonalEvent = ReplicatedStorage:FindFirstChild("PersonalTreasureCollectedEvent")
+local GlobalEvent = ReplicatedStorage:FindFirstChild("GlobalTreasureCollectedEvent")
+
+local treasurePart = script.Parent
+local treasureModel = treasurePart.Parent.Parent
+local proximityPrompt = treasurePart:FindFirstChild("ProximityPrompt")
+
+if not proximityPrompt then
+	warn("❌ No ProximityPrompt found in Treasure Part!")
+	return
+end
+
+-- Function to collect treasure
+local function collectTreasure(player)
+	if treasureModel then
+		treasureModel:Destroy()  -- Destroy the treasure
+		print("✅ Treasure collected by " .. player.Name)
+
+		-- ✅ Add points to the player's leaderboard AND team
+		local team = player.Team
+		if team then
+			PointsManager.AddPoints(team, 1)  -- Add 1 point to the team
+			PointsManager.AddPoints(player, 1)  -- Add 1 point to the player's personal leaderboard score
+		else
+			warn("❌ " .. player.Name .. " is not assigned to a team!")
+		end
+
+		-- ✅ Increment global treasure counter
+		PointsManager.IncrementTreasureCounter()
+
+		-- Fire event for this player
+		if PersonalEvent then
+			PersonalEvent:FireClient(player)
+		else
+			warn("❌ PersonalTreasureCollectedEvent not found in ReplicatedStorage!")
+		end
+
+		-- Fire event for all players
+		if GlobalEvent then
+			GlobalEvent:FireAllClients(player.Name)
+		else
+			warn("❌ GlobalTreasureCollectedEvent not found in ReplicatedStorage!")
+		end
+	end
+end
+
+-- Connect ProximityPrompt to function
+proximityPrompt.Triggered:Connect(collectTreasure)
