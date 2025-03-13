@@ -12,6 +12,9 @@ if not GameFinishedEvent then
 	GameFinishedEvent.Parent = ReplicatedStorage
 end
 
+-- Global treasure counter
+PointsManager.TotalTreasuresCollected = 0  -- ✅ Keeps track of collected treasures
+
 -- Initialize leaderstats for each player
 local function setupPlayerLeaderstats(player)
 	local leaderstats = player:FindFirstChild("leaderstats")
@@ -19,7 +22,6 @@ local function setupPlayerLeaderstats(player)
 		leaderstats = Instance.new("Folder")
 		leaderstats.Name = "leaderstats"
 		leaderstats.Parent = player
-		print("✅ Created leaderstats for", player.Name)
 	end
 
 	-- Create Score
@@ -28,7 +30,6 @@ local function setupPlayerLeaderstats(player)
 		scoreValue = Instance.new("IntValue")
 		scoreValue.Name = "Score"
 		scoreValue.Parent = leaderstats
-		print("✅ Created Score for", player.Name, "Value:", scoreValue.Value)
 	end
 end
 
@@ -45,6 +46,51 @@ function PointsManager.AddPoints(player, points)
 				scoreValue.Value = scoreValue.Value + points
 				print("🔄 Updated", player.Name, "Score:", scoreValue.Value)
 			end
+		end
+	end
+end
+
+-- ✅ **Treasure counter function**
+function PointsManager.IncrementTreasureCounter()
+	PointsManager.TotalTreasuresCollected += 1
+	print("🔥 Total Treasures Collected:", PointsManager.TotalTreasuresCollected)
+
+	-- ✅ If 3 treasures are collected, trigger game end
+	if PointsManager.TotalTreasuresCollected >= 3 then
+		-- Determine Winning Team
+		local redScore = Teams:FindFirstChild("TeamRed") and Teams.TeamRed:GetAttribute("Score") or 0
+		local blueScore = Teams:FindFirstChild("TeamBlue") and Teams.TeamBlue:GetAttribute("Score") or 0
+		local winningTeam = "tie"
+
+		if redScore > blueScore then
+			winningTeam = "TeamRed"
+		elseif blueScore > redScore then
+			winningTeam = "TeamBlue"
+		end
+
+		-- Find MVP (Player with highest score)
+		local highestTreasureCount = 0
+		local MVP = "tie"
+		for _, player in pairs(Players:GetPlayers()) do
+			local leaderstats = player:FindFirstChild("leaderstats")
+			if leaderstats then
+				local personalScore = leaderstats:FindFirstChild("Score")
+				if personalScore and personalScore.Value > highestTreasureCount then
+					highestTreasureCount = personalScore.Value
+					MVP = player.Name
+				elseif personalScore and personalScore.Value == highestTreasureCount then
+					MVP = "tie"
+				end
+			end
+		end
+
+		-- Debug Prints
+		print("🏆 Game Over! Winning Team:", winningTeam)
+		print("🏅 MVP:", MVP)
+
+		-- ✅ Fire event to show game-over GUI
+		if GameFinishedEvent then
+			GameFinishedEvent:FireAllClients(winningTeam, MVP)
 		end
 	end
 end
