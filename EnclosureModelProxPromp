@@ -1,0 +1,21 @@
+local part = script.Parent  -- The enclosure part with the ProximityPrompt
+local proximityPrompt = part:FindFirstChild("ProximityPrompt")
+local enclosureModel = part.Parent  -- EnclosureModel
+local treasureModel = enclosureModel.Parent:FindFirstChild("Treasure")  -- Find the Treasure model
+
+-- Get the ProximityPrompt inside the Treasure model
+local treasurePrompt = treasureModel and treasureModel:FindFirstChildWhichIsA("ProximityPrompt", true)  
+
+if not proximityPrompt or not treasureModel or not treasurePrompt then return end
+
+proximityPrompt.Triggered:Connect(function()
+	-- Destroy all parts inside EnclosureModel
+	for _, obj in ipairs(enclosureModel:GetChildren()) do
+		if obj:IsA("BasePart") then
+			obj:Destroy()
+		end
+	end
+
+	-- Enable the Treasure's ProximityPrompt
+	treasurePrompt.Enabled = true
+end)
