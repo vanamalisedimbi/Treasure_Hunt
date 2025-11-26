@@ -1,8 +1,5 @@
---to be pasted in the NPC model
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- SIMPLE NPC TALK SCRIPT
 local ChatService = game:GetService("Chat")
-
-local DialogueModule = require(ReplicatedStorage:WaitForChild("NPCDialogues"))
 
 local NPC = script.Parent
 local Head = NPC:WaitForChild("Head")
@@ -13,12 +10,12 @@ if not ProximityPrompt then
 	return
 end
 
--- Assign a unique dialogue to this NPC
-local uniqueDialogue = DialogueModule.GetUniqueDialogue()
+-- STUDENT CAN TYPE WHAT THE NPC SHOULD SAY HERE
+local dialogueText = "Hello traveler! Welcome to our village."
 
 -- Function to make NPC speak
 local function talk()
-	ChatService:Chat(Head, uniqueDialogue, Enum.ChatColor.Blue)
+	ChatService:Chat(Head, dialogueText, Enum.ChatColor.Blue)
 end
 
 -- Connect the prompt activation to the talk function
